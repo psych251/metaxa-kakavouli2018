@@ -18,6 +18,8 @@ In this study, the authors examine the perception of introductory Computer Scien
 
 Participants review one of two course sites (either neutral or masculine conditions) and take a survey about the website afterwards, which includes both multiple choice and open response questions. The survey proper is preceded by verification questions to ensure that participants have reviewed the site, and concludes with a demographic survey. I have already located the original websites used for the study, and plan on hosting them myself for the replication. Besides this project being fairly different than research I've done before, I don't forsee any specific challenges associated with this study. 
 
+The [original paper](https://github.com/psych251/metaxa2018/blob/master/original_paper/3173574.3174188.pdf) and [the repository](https://github.com/psych251/metaxa2018)
+
 
 ##Methods
 
