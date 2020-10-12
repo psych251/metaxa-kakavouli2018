@@ -1,0 +1,124 @@
+---
+title: "Replication of Gender-Inclusive Design Sense of Belonging and Bias in Web Interfaces by Danaë Metaxa-Kakavouli, Kelly Wang, James A. Landay, Jeff Hancock (CHI 2018)" 
+author: "Eric Rawn (erawn@stanford.edu)"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: no
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+
+
+## Introduction
+
+In this ACM CHI 2018 study, "Gender-Inclusive Design Sense of Belonging and Bias in Web Interfaces", the authors examine the perception of introductory Computer Science course sites, specifically the sense of community belonging by young women when shown websites coded as neutral and masculine (between subjects). 
+
+Participants review one of two course sites (either neutral or masculine conditions) and take a survey about the website afterwards, which includes both multiple choice and open response questions. The survey proper is preceded by verification questions to ensure that participants have reviewed the site, and concludes with a demographic survey. 
+
+
+The [original paper](https://github.com/psych251/metaxa-kakavouli2018/blob/master/original_paper/3173574.3174188.pdf) and [the repository](https://github.com/psych251/metaxa-kakavouli2018)
+
+
+## Methods
+
+### Power Analysis
+
+Original effect size, power analysis for samples to achieve 80%, 90%, 95% power to detect that effect size.  Considerations of feasibility for selecting planned sample size.
+
+### Planned Sample
+
+We planned to recruit 111(subject to power analysis) participants using Amazon Mechanical Turk using the same criteria as the original paper: age between 18 and 25 years of age and from the United States. 
+
+### Materials
+
+We reproduced the materials as described in the original paper and with materials provided by the original authors. The two webpages hosted will have the same material, but will be rehosted on a new domain. The original experiment features two websites (one neutral and one masculine):
+![(Image and Caption from Original Paper) The banner and other content of the gender-neutral interface used nature imagery (left), while the masculine interface included Star Trek imagery and styling evocative of a computer terminal (right).](fig1.png)
+(Image Taken from Original Paper)
+
+
+
+Participants were asked a total of 22 questions across six measures of interest on 1-7 scales (1: "not at all, 7: "extremely"), which were 1. Enrollment Intention, 2. Ambient Belonging, 3. Anticipated Success, 4. Self Confidence, 5. Future CS Study Intentions, 6. Gender-related Anxiety. 
+
+Participants were also asked demographic questions about gender, age, race, and education afterwards. 
+
+### Procedure	
+Participants are initially asked 3 text-based responses as an initial attention check and a fourth question about the author of the website "to probe for suspicion about the study." 
+
+From the original study:
+>Participants were asked to review one of the two course web- pages and answer survey questions about six main measures regarding their sense of ambient belonging, perceptions of the class and the discipline of computer-science, and gender- related anxiety. To prevent bias, participants were told that the study was intended to “learn more about young people’s attitudes towards studying Computer Science.”
+After agreeing to participate, participants were redirected to a Qualtrics survey, which randomly assigned them to review one of the two course pages.
+
+A coded open-ended response question was also asked “Would you take this class? Why or why not?” in the original study. This question will be asked in order to perform the replication as closely as possible but will not be analysed. 
+
+Otherwise, the procedure will be followed extremely closely, with the exception of the URLs for the two websites will be different, as they will be newly hosted by the replication author. 
+
+
+
+### Analysis Plan
+As per the original study, responses will be excluded based on a failure of the original attention check questions. 
+
+The responses will be analysed for statistical significance across the six measures (means of related questions) across women in the masculine condition in contrast with women in the neutral condition in addition to women in the masculine condition compared to all other groups. We use a t-test to indicate statistical significance between the two groups.
+
+**Clarify key analysis of interest here**  The key analysis are the measures for ambient belonging and gender-related anxiety of women in the masculine condition compared to all other groups. Statistically significant difference between the two groups is expressed in a t-test. 
+
+### Differences from Original Study
+
+The only differences in the study are the absence of the open-response question in the analysis (but not the survey itself) and the different URLs of the websites. We do not predict that the different URL will have a significant effect, as participants will access the website via the same hyperlinked text. The original URLs were cs.stanford.edu/cs106a/(home/course), while the new URLs will be stanford.edu/~erawn/cs106a/(home/course). 
+<!-- 
+### Methods Addendum (Post Data Collection)
+
+You can comment this section out prior to final report with data collection.
+
+#### Actual Sample
+  Sample size, demographics, data exclusions based on rules spelled out in analysis plan
+
+#### Differences from pre-data collection methods plan
+  Any differences from what was described as the original plan, or “none”.
+
+ -->
+## Results
+
+
+### Data preparation
+
+Participants will be excluded based on the attention check questions. The mean score for each target measure will be calculated from the relevant questions.
+	
+```{r include=F}
+###Data Preparation
+
+####Load Relevant Libraries and Functions
+
+####Import data
+
+#### Data exclusion / filtering
+
+#### Prepare data for analysis - create columns etc.
+```
+
+### Confirmatory analysis
+
+As specified, we calculate the mean score for each target measure than run a t-test comparing women to men for each condition. Then, run a second analysis comparing women in the masculine condition to all other groups. 
+
+![Overview of Results(Taken from the Original Paper)](fig2.png)
+
+*Side-by-side graph with original graph is ideal here*
+
+### Exploratory analyses
+
+Any follow-up analyses desired (not required).  
+
+## Discussion
+
+### Summary of Replication Attempt
+
+Open the discussion section with a paragraph summarizing the primary result from the confirmatory analysis and the assessment of whether it replicated, partially replicated, or failed to replicate the original result.  
+
+### Commentary
+
+Add open-ended commentary (if any) reflecting (a) insights from follow-up exploratory analysis, (b) assessment of the meaning of the replication (or not) - e.g., for a failure to replicate, are the differences between original and present study ones that definitely, plausibly, or are unlikely to have been moderators of the result, and (c) discussion of any objections or challenges raised by the current and original authors about the replication attempt.  None of these need to be long.
