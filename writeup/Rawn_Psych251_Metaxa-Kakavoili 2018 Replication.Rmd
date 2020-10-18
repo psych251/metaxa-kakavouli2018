@@ -24,6 +24,8 @@ Participants review one of two course sites (either neutral or masculine conditi
 
 The [original paper](https://github.com/psych251/metaxa-kakavouli2018/blob/master/original_paper/3173574.3174188.pdf) and [the repository](https://github.com/psych251/metaxa-kakavouli2018)
 
+A link to the Qualtrics Survey is [Here](https://stanforduniversity.ca1.qualtrics.com/jfe/preview/SV_0ev10zwblqz5CZf?Q_CHL=preview&Q_SurveyVersionID=current)
+
 
 ## Methods
 
