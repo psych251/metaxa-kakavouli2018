@@ -102,11 +102,14 @@ library(stringr)
 library(ggplot2)
 library(janitor)
 ####Import data
-data = read.csv("data/test5.csv")
+data = read.csv("data/PilotBData.csv")
+turk = read.csv("data/pilotBTurk.csv")
 #data %>% row_to_names(row_number=2)
 #### Data exclusion / filtering
 data_filtered = data[-1:-2,]
 data_filtered = data_filtered %>% filter(Finished = TRUE)
+data_filtered = data_filtered %>% filter(Random.ID %in% turk$Answer.surveycode)
+#data_filtered = data_filtered[-c(2,3),]
 data_questions = data_filtered %>%
   select(ResponseId,
         #starts_with("EI"),
@@ -130,10 +133,18 @@ data_longer = data_longer %>%
   mutate(
     Category = str_extract(Question, "[A-Z]+")
   )
+data_longer = data_longer %>%
+  rename(
+    Gender = Q18,
+    Treatment = text_condition
+  )
 data_summary = data_longer %>%
-  group_by(ResponseId, Category, Q18, text_condition) %>%
+  group_by(ResponseId, Category, Gender, Treatment) %>%
   summarize(MeanQuestion = mean(as.numeric(Value), na.rm=T))
-data_summary
+data_stats = data_longer %>%
+   group_by(Category, Gender, Treatment) %>%
+  summarize(MeanQuestion = mean(as.numeric(Value), na.rm=T))
+data_stats
 
 ```
 
@@ -141,22 +152,35 @@ data_summary
 
 As specified, we calculate the mean score for each target measure than run a t-test comparing women to men for each condition. Then, run a second analysis comparing women in the masculine condition to all other groups. 
 ```{r echo=TRUE}
-results = data_summary %>%
-  group_by(Category, Q18, text_condition) %>%
-  summarize(TotalMeanQuestion = mean(MeanQuestion, na.rm=T))
-
+ab = data_summary %>%
+  filter(Category == "AB") 
 ab_male_1 = data_summary %>%
-  filter(Q18 == "1", Category == "AB",text_condition == 1) 
+  filter(Gender == "1", Category == "AB",Treatment == 1) 
 ab_male_2 = data_summary %>%
-  filter(Q18 == "1", Category == "AB",text_condition == 2) 
+  filter(Gender == "1", Category == "AB",Treatment == 2) 
 ab_female_1 = data_summary %>%
-  filter(Q18 == "2", Category == "AB",text_condition == 1) 
+  filter(Gender == "2", Category == "AB",Treatment == 1) 
 ab_female_2 = data_summary %>%
-  filter(Q18 == "2", Category == "AB",text_condition == 2) 
+  filter(Gender == "2", Category == "AB",Treatment == 2) 
 
-t.test(ab_male_1["MeanQuestion"],ab_male_2["MeanQuestion"])
+#t.test(ab_male_1["MeanQuestion"],ab_male_2["MeanQuestion"])
+g <- ggplot(ab, aes(y=TotalMeanQuestion,x=Gender, fill=Treatment)) + 
+  geom_bar(position="dodge", stat="identity") +
+  scale_fill_brewer(palette="Set1") +
+  ggtitle("Ambient Belonging Proof of Concept Results") +
+  ylab("Mean Question Response")
 
 ```
+```{r}
+p <- ggplot(data_stats, aes(y=MeanQuestion,x=Gender,fill=Treatment)) + 
+  geom_bar(position="dodge", stat="identity") +
+  scale_fill_brewer(palette="Set1") +
+  ggtitle("Ambient Belonging Proof of Concept Results") +
+  ylab("Mean Question Response") +
+  facet_wrap(~Category)
+p
+```
+
 
 ![Overview of Results(Taken from the Original Paper)](fig2.png)
 
