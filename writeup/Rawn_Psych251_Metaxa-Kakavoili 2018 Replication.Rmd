@@ -50,7 +50,7 @@ Participants were asked a total of 22 questions across six measures of interest 
 Participants were also asked demographic questions about gender, age, race, and education afterwards. 
 
 ### Procedure	
-Participants are initially asked 3 text-based responses as an initial attention check and a fourth question about the author of the website "to probe for suspicion about the study." 
+Participants are initially asked 3 text-based responses as an initial attention check and a fourth question about the author of the website "to probe for suspicion about the study." Participants will be excluded upon failure of these questions.
 
 From the original study:
 >Participants were asked to review one of the two course web- pages and answer survey questions about six main measures regarding their sense of ambient belonging, perceptions of the class and the discipline of computer-science, and gender- related anxiety. To prevent bias, participants were told that the study was intended to “learn more about young people’s attitudes towards studying Computer Science.”
