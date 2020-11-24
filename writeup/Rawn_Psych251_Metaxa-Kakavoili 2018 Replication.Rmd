@@ -26,6 +26,8 @@ The [original paper](https://github.com/psych251/metaxa-kakavouli2018/blob/maste
 
 A link to the Qualtrics Survey is [Here](https://stanforduniversity.ca1.qualtrics.com/jfe/preview/SV_0ev10zwblqz5CZf?Q_CHL=preview&Q_SurveyVersionID=current)
 
+A link to the preregistration of this replication: https://osf.io/rvw8t/ 
+
 
 ## Methods
 
@@ -72,18 +74,13 @@ The responses will be analysed for statistical significance across the six measu
 ### Differences from Original Study
 
 The only differences in the study are the absence of the open-response question in the analysis (but not the survey itself) and the different URLs of the websites. We do not predict that the different URL will have a significant effect, as participants will access the website via the same hyperlinked text. The original URLs were cs.stanford.edu/cs106a/(home/course), while the new URLs will be stanford.edu/~erawn/cs106a/(home/course). 
-<!-- 
+ 
 ### Methods Addendum (Post Data Collection)
 
-You can comment this section out prior to final report with data collection.
-
 #### Actual Sample
-  Sample size, demographics, data exclusions based on rules spelled out in analysis plan
+  13 Participants were excluded due to failing the attention check questions. The data collection was otherwise as described. 
 
-#### Differences from pre-data collection methods plan
-  Any differences from what was described as the original plan, or “none”.
 
- -->
 ## Results
 
 
@@ -101,34 +98,46 @@ library(dplyr)
 library(stringr)
 library(ggplot2)
 library(janitor)
+library(forcats)
 ####Import data
-data = read.csv("data/PilotBData.csv")
-turk = read.csv("data/pilotBTurk.csv")
-#data %>% row_to_names(row_number=2)
+data = read.csv("data/finalData.csv")
+turk = read.csv("data/FinalTurk.csv")
 #### Data exclusion / filtering
 data_filtered = data[-1:-2,]
 data_filtered = data_filtered %>% filter(Finished = TRUE)
 data_filtered = data_filtered %>% filter(Random.ID %in% turk$Answer.surveycode)
-#data_filtered = data_filtered[-c(2,3),]
+
+##Exclude those who failed the attention check
+data_filtered = data_filtered[-c(10,11,15,16,22,24,41,44,45,47,50,54,60),]
+
+#Select Fields of Interest
 data_questions = data_filtered %>%
   select(ResponseId,
-        #starts_with("EI"),
+         starts_with("EI"),
          starts_with("AB"),
-         starts_with("AS"),
-         starts_with("FN"),
-         starts_with("CS"),
+         #starts_with("AS"),
+         #starts_with("FN"),
+         #starts_with("CS"),
          starts_with("PC"),
          starts_with("LT"),
-         starts_with("SN"),
+         #starts_with("SN"),
          starts_with("MF"),
          starts_with("GS"),
          text_condition,
-         starts_with("Q18"))
+         starts_with("Q18"),
+         starts_with("Q52"),
+         starts_with("Q53"))
 
 #### Prepare data for analysis - create columns etc.
 data_longer = data_questions %>% pivot_longer(cols=-c("Q18", "text_condition", "ResponseId"),
                              names_to = 'Question',
                              values_to = 'Value')
+
+#Handle Exploratory Data fields 
+data_longer$Question[data_longer$Question == "Q53"] <- "COURSES"
+data_longer$Question[data_longer$Question == "Q52_1"] <- "CSEXPERIENCE"
+
+#Rename Data Fields
 data_longer = data_longer %>% 
   mutate(
     Category = str_extract(Question, "[A-Z]+")
@@ -138,64 +147,208 @@ data_longer = data_longer %>%
     Gender = Q18,
     Treatment = text_condition
   )
+
+data_longer$Gender[data_longer$Gender == "1"] <- "Male"
+data_longer$Gender[data_longer$Gender == "2"] <- "Female"
+data_longer$Gender[data_longer$Gender == "3"] <- "Other"
+data_longer$Category[data_longer$Category == "EI"] <- "Enrollment Intentions"
+data_longer$Category[data_longer$Category == "AB"] <- "Ambient Belonging"
+data_longer$Category[data_longer$Category == "MF"] <- "Perceived Website Masculinity"
+data_longer$Category[data_longer$Category == "PC"] <- "Self Confidence"
+data_longer$Category[data_longer$Category == "LT"] <- "Future CS Study Intentions"
+data_longer$Category[data_longer$Category == "GS"] <- "Gender-related Anxiety"
+data_longer$Treatment[data_longer$Treatment == "1"] <- "Neutral Condition"
+data_longer$Treatment[data_longer$Treatment == "2"] <- "Masculine Condition"
+
 data_summary = data_longer %>%
   group_by(ResponseId, Category, Gender, Treatment) %>%
   summarize(MeanQuestion = mean(as.numeric(Value), na.rm=T))
 data_stats = data_longer %>%
-   group_by(Category, Gender, Treatment) %>%
-  summarize(MeanQuestion = mean(as.numeric(Value), na.rm=T))
-data_stats
-
+  group_by(Category, Gender, Treatment) %>%
+  summarize(MeanQuestion = mean(as.numeric(Value), na.rm=T),
+            StandardDeviation = sd(as.numeric(Value),na.rm = T),
+            n = n(),
+            StandardError = StandardDeviation / sqrt(n),
+            CI = StandardError * 1.96
+            )
 ```
+
+
 
 ### Confirmatory analysis
 
 As specified, we calculate the mean score for each target measure than run a t-test comparing women to men for each condition. Then, run a second analysis comparing women in the masculine condition to all other groups. 
 ```{r echo=TRUE}
-ab = data_summary %>%
-  filter(Category == "AB") 
-ab_male_1 = data_summary %>%
-  filter(Gender == "1", Category == "AB",Treatment == 1) 
-ab_male_2 = data_summary %>%
-  filter(Gender == "1", Category == "AB",Treatment == 2) 
-ab_female_1 = data_summary %>%
-  filter(Gender == "2", Category == "AB",Treatment == 1) 
-ab_female_2 = data_summary %>%
-  filter(Gender == "2", Category == "AB",Treatment == 2) 
+#Method For Running T-Tests
+ttest <- function(category){
+  ab = data_summary %>%
+  filter(Category == toString(category))
+ab_male_1 = ab %>%
+  filter(Gender == "Male",Treatment == "Neutral Condition") 
+ab_male_2 = ab %>%
+  filter(Gender == "Male",Treatment == "Masculine Condition") 
+ab_female_1 = ab %>%
+  filter(Gender == "Female",Treatment == "Neutral Condition") 
+ab_female_2 = ab %>%
+  filter(Gender == "Female",Treatment == "Masculine Condition") 
+ab_other <- rbind(ab_male_1,ab_male_2,ab_female_1)
 
-#t.test(ab_male_1["MeanQuestion"],ab_male_2["MeanQuestion"])
-g <- ggplot(ab, aes(y=TotalMeanQuestion,x=Gender, fill=Treatment)) + 
-  geom_bar(position="dodge", stat="identity") +
-  scale_fill_brewer(palette="Set1") +
-  ggtitle("Ambient Belonging Proof of Concept Results") +
-  ylab("Mean Question Response")
+result <- t.test(ab_other["MeanQuestion"],ab_female_2["MeanQuestion"])
+return(result)
+}
 
+#Run T-Tests on These Categories
+ttests <- data.frame("Category" = c("Enrollment Intentions", "Ambient Belonging", "Self Confidence","Future CS Study Intentions","Gender-related Anxiety","Perceived Website Masculinity"), "p_val", "t_val" )
+
+#Run Tests
+for(i in 1:nrow(ttests)){
+  ttests[i,2] = ttest(ttests[i,1])$p.value
+  ttests[i,3] = ttest(ttests[i,1])$statistic
+}
+
+#Display Significant Results (if any)
+ttests %>% filter(
+  X.p_val. < .05
+)
 ```
+
+
 ```{r}
-p <- ggplot(data_stats, aes(y=MeanQuestion,x=Gender,fill=Treatment)) + 
+#remove non-binary gender respondents (consistent with original study)
+data_binary <- data_stats %>%
+  filter(Gender == "Male" || Gender == "Female")
+
+#Produce Chart
+data_binary$Category <- factor(data_binary$Category, levels=c("Enrollment Intentions", "Ambient Belonging", "Self Confidence","Future CS Study Intentions","Gender-related Anxiety","Perceived Website Masculinity"))
+data_binary$Treatment <- factor(data_binary$Treatment, levels=c("Neutral Condition", "Masculine Condition"))
+
+p <- ggplot(data_binary, aes(y=MeanQuestion,x=Gender,fill=Treatment)) + 
   geom_bar(position="dodge", stat="identity") +
+  geom_errorbar(
+    aes(ymin = MeanQuestion - CI, ymax = MeanQuestion + CI),
+    width=.2, position = position_dodge(0.9)) +
   scale_fill_brewer(palette="Set1") +
-  ggtitle("Ambient Belonging Proof of Concept Results") +
   ylab("Mean Question Response") +
-  facet_wrap(~Category)
+  facet_wrap(~Category) + 
+  scale_fill_manual(values=c("Green", "Blue"),limits= c("Neutral Condition","Masculine Condition")) +
+  scale_x_discrete(limits=c("Male","Female"))+
+  scale_y_discrete(breaks = 0:8,limits = 0:7)
 p
 ```
+
+### Results Overview
 
 
 ![Overview of Results(Taken from the Original Paper)](fig2.png)
 
-*Side-by-side graph with original graph is ideal here*
+Replicated Graph
+![Replication Final Results](AB_finalGraph.png)
+While the replicated graph shows that each of the six categories is trending roughly in the same direction as the original study, only the measures of Ambient Belonging t(50) = 2.68 p = .017 and Self Confidence t(50) = 2.14 p = .048 achieved statistical significance. 
+
 
 ### Exploratory analyses
 
-Any follow-up analyses desired (not required).  
+```{r}
+experience <- data_summary$MeanQuestion[data_summary$Category == "CSEXPERIENCE"]
+ambientb <- data_summary$MeanQuestion[data_summary$Category == "Ambient Belonging"]
+
+df = data.frame(experience,ambientb)
+cor.test(experience,ambientb,method="pearson")
+
+ggplot(df, aes(x=experience, y=ambientb)) +
+  geom_smooth(method="lm") +
+  geom_point() +
+  ylab("Ambient Belonging Measure") +
+  xlab("CS Experience") +
+  scale_x_discrete(breaks = 0:10,limits = 0:10)
+  ggtitle("CS Experience and Ambient Belonging")
+
+
+```
+Added for this replication was a demographic question at the end of the survey which asked: "How would you rate your Computer Science Experience?" Here we see that computer science experience positivey correlates with the measure of ambient belonging, which would be consistent with the theoretical basis of the study— those who already had taken Computer Science classes more easily saw themselves as members of a computer science "in group". 
+```{r}
+courses <- data_summary$MeanQuestion[data_summary$Category == "COURSES"]
+ambientb <- data_summary$MeanQuestion[data_summary$Category == "Ambient Belonging"]
+
+df = data.frame(courses,ambientb)
+cor.test(courses,ambientb,method="pearson")
+
+ggplot(df, aes(x=courses, y=ambientb)) +
+  geom_smooth(method="lm") +
+  geom_point() +
+  ylab("Ambient Belonging Measure") +
+  xlab("CS Courses Taken") +
+  scale_x_discrete(breaks = 0:10,limits = 0:10)
+  ggtitle("CS Courses and Ambient Belonging")
+
+
+```
+The number of Computer Science classes, however, was only weakly(and non significantly) correlated with ambient belonging. It seems meaningful that all of the participants which had taken >3 Computer Science classes all had relatively high Ambient Belonging scores, perhaps suggesting that only after a couple classes do computer science classes contribute to a feeling of ambient belonging. This finding is only meaningful insofar as it suggests a topic for future study.
+```{r}
+#T-tests are run on the M
+ttest <- function(category){
+  ab = data_summary %>%
+  filter(Category == toString(category))
+ab_male_1 = ab %>%
+  filter(Gender == "Male") 
+ab_female_1 = ab %>%
+  filter(Gender == "Female") 
+
+result <- t.test(ab_male_1["MeanQuestion"],ab_female_1["MeanQuestion"])
+return(result)
+}
+
+ttests <- data.frame("Category" = c("Enrollment Intentions", "Ambient Belonging", "Self Confidence","Future CS Study Intentions","Gender-related Anxiety","Perceived Website Masculinity"), "p_val", "t_val" )
+
+for(i in 1:nrow(ttests)){
+  ttests[i,2] = ttest(ttests[i,1])$p.value
+  ttests[i,3] = ttest(ttests[i,1])$statistic
+}
+
+ttests %>% filter(
+  X.p_val. < .05
+)
+
+```
+
+Lastly, we look for significant differences between men and women regardless of the treatment condition. Here we see significant differences between men and women in their Ambient Belonging, Self Confidence, and Future CS Study Intentions. 
+
+```{r}
+
+#T-tests are run on the M
+ttest <- function(category){
+  ab = data_summary %>%
+  filter(Category == toString(category))
+ab_female_1 = ab %>%
+  filter(Gender == "Female",Treatment == "Neutral Condition") 
+ab_female_2 = ab %>%
+  filter(Gender == "Female",Treatment == "Masculine Condition") 
+
+result <- t.test(ab_female_1["MeanQuestion"],ab_female_2["MeanQuestion"])
+return(result)
+}
+
+ttests <- data.frame("Category" = c("Enrollment Intentions", "Ambient Belonging", "Self Confidence","Future CS Study Intentions","Gender-related Anxiety","Perceived Website Masculinity"), "p_val", "t_val" )
+
+for(i in 1:nrow(ttests)){
+  ttests[i,2] = ttest(ttests[i,1])$p.value
+  ttests[i,3] = ttest(ttests[i,1])$statistic
+}
+
+ttests
+```
+Finding above that there are no significant differences between women in the two conditions combined with the above analysis that showed that significant differences existed due to gender regardless of the condition might suggest a significant impact of gender regardless of condition on the central statistic of the paper, which compared women in the masculine condition to all other conditions. This would suggest that there exists serious effects due to stereotypes on women when shown computer science material, but that those affects occur regardless of the specific aesthetic or stereotype cues of the content itself. 
 
 ## Discussion
 
 ### Summary of Replication Attempt
 
-Open the discussion section with a paragraph summarizing the primary result from the confirmatory analysis and the assessment of whether it replicated, partially replicated, or failed to replicate the original result.  
+This replication was partially successful in replicating the results of the original paper, as it successfully found significant differences between women in the masculine condition and all other groups on the categories of ambient belonging and self confidence, but failed on all other categories. 
 
 ### Commentary
 
-Add open-ended commentary (if any) reflecting (a) insights from follow-up exploratory analysis, (b) assessment of the meaning of the replication (or not) - e.g., for a failure to replicate, are the differences between original and present study ones that definitely, plausibly, or are unlikely to have been moderators of the result, and (c) discussion of any objections or challenges raised by the current and original authors about the replication attempt.  None of these need to be long.
+The exploratory analysis suggests future work analyzing the effect of previous CS experience on feelings of ambient belonging. It also revealed significant effects due to gender regardless of the treatment condition. These effects should have been isolated in the original paper by comparing only women between the masculine and neutral conditions. If no significant differences were found, then it seems possible that the significant differences between women in the masculine condition and all other groups was due to gender regardless of the treatment, which would call into question the findings of the paper and would suggest that women on the whole experience greater resistance to ambient belonging cues related to computer science regardless of the specific aesthetic of the material. 
+
+This replication had a much smaller sample size compared to the original study, and so it remains possible that this study was simply underpowered. 
+
+Other than the added demographic questions at the end and the different URLs of the test websites (which were not mentioned in the suspicion probe question), this replication was identical to the original study. 
